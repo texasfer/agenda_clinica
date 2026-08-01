@@ -1,6 +1,7 @@
 from datetime import date
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 from django.db.models import Sum, Count
 from datetime import date
 import calendar
