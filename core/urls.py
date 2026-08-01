@@ -25,6 +25,7 @@ path(
     "recibos/",
     include("recibos.urls")
 ),
+path('admin/', admin.site.urls),  # <-- Rota padrão do Admin
 
 ]
 
