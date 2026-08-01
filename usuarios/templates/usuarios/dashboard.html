@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Dashboard</h2>
+            <small class="text-muted">Bem-vindo ao Sistema Agenda Clínica</small>
+        </div>
+        <div>
+            <span class="badge bg-success fs-6">
+                {{ request.user.get_full_name|default:request.user.username }}
+            </span>
+        </div>
+    </div>
+<!-- BARRA DE FILTROS POR MÊS E ANO -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <span class="fw-bold text-secondary">
+                        <i class="bi bi-filter me-1"></i> Filtrar Período:
+                    </span>
+                </div>
+                
+                <div class="col-auto">
+                    <select name="mes" class="form-select form-select-sm">
+                        {% for num, nome in meses_disponiveis %}
+                            <option value="{{ num }}" {% if num == mes_selecionado %}selected{% endif %}>
+                                {{ nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-auto">
+                    <select name="ano" class="form-select form-select-sm">
+                        {% for a in anos_disponiveis %}
+                            <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>
+                                {{ a }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="bi bi-search"></i> Aplicar Filtro
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                        Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Indicadores Gerais Totais -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">Total de Clientes</small>
+                            <h2 class="mt-2 mb-0">{{ clientes }}</h2>
+                        </div>
+                        <i class="bi bi-people-fill text-success fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">Total Agendamentos</small>
+                            <h2 class="mt-2 mb-0">{{ agendados }}</h2>
+                        </div>
+                        <i class="bi bi-calendar-check text-primary fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">Total Atendimentos</small>
+                            <h2 class="mt-2 mb-0">{{ atendidos }}</h2>
+                        </div>
+                        <i class="bi bi-heart-pulse text-danger fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">Próximos A Caminho</small>
+                            <h2 class="mt-2 mb-0">{{ proximos|length }}</h2>
+                        </div>
+                        <i class="bi bi-clock-history text-warning fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVO: Painel de Visão Panorâmica (Mês e Ano) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow bg-light">
+                <div class="card-header bg-dark text-white fw-bold">
+                    <i class="bi bi-bar-chart-fill me-2"></i> Visão Panorâmica de Desempenho
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 border-end">
+                            <span class="text-muted d-block small">Agendamentos no Mês</span>
+                            <span class="fs-3 fw-bold text-primary">{{ agendamentos_mes }}</span>
+                        </div>
+                        <div class="col-md-3 border-end">
+                            <span class="text-muted d-block small">Atendimentos no Mês</span>
+                            <span class="fs-3 fw-bold text-success">{{ atendimentos_mes }}</span>
+                        </div>
+                        <div class="col-md-3 border-end">
+                            <span class="text-muted d-block small">Agendamentos no Ano ({{ ano_atual }})</span>
+                            <span class="fs-3 fw-bold text-info">{{ agendamentos_ano }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block small">Previsto Mês (R$)</span>
+                            <span class="fs-3 fw-bold text-dark">R$ {{ faturamento_mes|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela e Ações Rápida -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Próximos Agendamentos</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data</th>
+                                <th>Início</th>
+                                <th>Cliente</th>
+                                <th>Profissional</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in proximos %}
+                            <tr>
+                                <td>{{ a.data|date:"d/m/Y" }}</td>
+                                <td>{{ a.hora_inicio }}</td>
+                                <td>{{ a.cliente.nome }}</td>
+                                <td>{{ a.profissional }}</td>
+                                <td>
+                                    {% if a.status == "AGENDADO" %}
+                                        <span class="badge bg-primary">Agendado</span>
+                                    {% elif a.status == "CONFIRMADO" %}
+                                        <span class="badge bg-success">Confirmado</span>
+                                    {% elif a.status == "ATENDIDO" %}
+                                        <span class="badge bg-dark">Atendido</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ a.get_status_display|default:a.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-4">
+                                    Nenhum agendamento próximo.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Acesso Rápido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'cliente_novo' %}" class="btn btn-success">
+                            <i class="bi bi-person-plus-fill me-1"></i> Novo Cliente
+                        </a>
+                        <a href="{% url 'agenda_novo' %}" class="btn btn-primary">
+                            <i class="bi bi-calendar-plus-fill me-1"></i> Novo Agendamento
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Resumo da Conta</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><b>Total Clientes:</b> {{ clientes }}</p>
+                    <p class="mb-2"><b>Total Geral de Agendamentos:</b> {{ agendados }}</p>
+                    <p class="mb-0"><b>Total de Concluídos:</b> {{ atendidos }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

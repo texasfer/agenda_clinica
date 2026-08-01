@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
+<h4>
+
+Configurações da Empresa
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<form method="post"
+
+enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+
+<label>Empresa</label>
+
+{{ form.nome_empresa }}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label>Nome Fantasia</label>
+
+{{ form.nome_fantasia }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-3 mb-3">
+
+<label>CNPJ</label>
+
+{{ form.cnpj }}
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>Telefone</label>
+
+{{ form.telefone }}
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>WhatsApp</label>
+
+{{ form.whatsapp }}
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>Email</label>
+
+{{ form.email }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+
+<label>Site</label>
+
+{{ form.site }}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label>Logo</label>
+
+{{ form.logo }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-8 mb-3">
+
+<label>Endereço</label>
+
+{{ form.endereco }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>Número</label>
+
+{{ form.numero }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>CEP</label>
+
+{{ form.cep }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-4 mb-3">
+
+<label>Bairro</label>
+
+{{ form.bairro }}
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+<label>Cidade</label>
+
+{{ form.cidade }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>UF</label>
+
+{{ form.uf }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>Intervalo Agenda</label>
+
+{{ form.intervalo_agenda }}
+
+</div>
+
+</div>
+
+<hr>
+
+<h5>
+
+SMTP
+
+</h5>
+
+<div class="row">
+
+<div class="col-md-4">
+
+{{ form.smtp_servidor }}
+
+</div>
+
+<div class="col-md-2">
+
+{{ form.smtp_porta }}
+
+</div>
+
+<div class="col-md-3">
+
+{{ form.smtp_email }}
+
+</div>
+
+<div class="col-md-3">
+
+{{ form.smtp_senha }}
+
+</div>
+
+</div>
+
+<hr>
+
+<button class="btn btn-success">
+
+Salvar
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between mb-3">
+
+    <h3>Financeiro</h3>
+
+    <div>
+
+        <span class="badge bg-danger">
+
+            Receber
+            R$ {{ total_receber }}
+
+        </span>
+
+        <span class="badge bg-success">
+
+            Pago
+            R$ {{ total_pago }}
+
+        </span>
+
+    </div>
+
+</div>
+
+<table class="table table-hover">
+
+<thead>
+
+<tr>
+
+<th>Data</th>
+
+<th>Cliente</th>
+
+<th>Valor</th>
+
+<th>Status</th>
+
+<th width="180">Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for i in financeiro %}
+
+<tr>
+
+<td>{{ i.data|date:"d/m/Y" }}</td>
+
+<td>{{ i.cliente.nome }}</td>
+
+<td>R$ {{ i.valor }}</td>
+
+<td>
+
+{% if i.status == "PAGO" %}
+
+<span class="badge bg-success">
+
+Pago
+
+</span>
+
+{% else %}
+
+<span class="badge bg-warning">
+
+Pendente
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if i.status == "PENDENTE" %}
+
+<a href="{% url 'financeiro_baixar' i.id %}"
+
+class="btn btn-success btn-sm">
+
+<i class="bi bi-cash"></i>
+
+</a>
+
+{% else %}
+
+<a href="{% url 'financeiro_estornar' i.id %}"
+
+class="btn btn-warning btn-sm">
+
+<i class="bi bi-arrow-counterclockwise"></i>
+
+</a>
+
+{% endif %}
+
+<a href="{% url 'financeiro_excluir' i.id %}"
+
+class="btn btn-danger btn-sm"
+
+onclick="return confirm('Excluir lançamento?')">
+
+<i class="bi bi-trash"></i>
+
+</a>
+
+<a href="{% url 'recibo' i.id %}"
+class="btn btn-secondary btn-sm">
+
+<i class="bi bi-printer"></i>
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="5">
+
+Nenhum lançamento encontrado.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
+<h3>
+
+RECIBO
+
+</h3>
+
+</div>
+
+<div class="card-body">
+
+<h5>
+
+Cliente
+
+</h5>
+
+<p>
+
+{{ lancamento.cliente.nome }}
+
+</p>
+
+<hr>
+
+<h5>
+
+Valor
+
+</h5>
+
+<h2>
+
+R$ {{ lancamento.valor }}
+
+</h2>
+
+<hr>
+
+<p>
+
+Recebemos do cliente acima a importância referente aos serviços prestados.
+
+</p>
+
+<br><br>
+
+<div class="row">
+
+<div class="col">
+
+_________________________
+
+<br>
+
+Assinatura
+
+</div>
+
+<div class="col text-end">
+
+{{ lancamento.data|date:"d/m/Y" }}
+
+</div>
+
+</div>
+
+<br>
+
+<button
+
+onclick="window.print()"
+
+class="btn btn-success">
+
+Imprimir
+
+</button>
+
+</div>
+
+</div>
+
+{% endblock %}

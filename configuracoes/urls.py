@@ -1,0 +1,18 @@
+from django.urls import path
+
+from . import views
+
+
+urlpatterns=[
+
+    path(
+
+        "",
+
+        views.empresa,
+
+        name="config_empresa"
+
+    ),
+
+]

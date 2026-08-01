@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovante de Atendimento #{{ atendimento.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="p-4" onload="window.print()">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <button onclick="window.print()" class="btn btn-primary">
+            Imprimir / Salvar PDF
+        </button>
+        <button onclick="window.close()" class="btn btn-secondary">
+            Fechar
+        </button>
+    </div>
+
+    <div class="card border-dark">
+        <div class="card-header bg-dark text-white text-center">
+            <h4 class="mb-0">Comprovante de Atendimento</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-6">
+                    <!-- Tenta acessar via agendamento.cliente, se não existir exibe a string do atendimento -->
+                    <strong>Cliente/Atendimento:</strong> 
+                    {% if atendimento.agendamento and atendimento.agendamento.cliente %}
+                        {{ atendimento.agendamento.cliente }}
+                    {% else %}
+                        {{ atendimento }}
+                    {% endif %}
+                </div>
+                <div class="col-6 text-end">
+                    <strong>Data:</strong> 
+                    {% if atendimento.data %}
+                        {{ atendimento.data|date:"d/m/Y" }}
+                    {% elif atendimento.agendamento %}
+                        {{ atendimento.agendamento.data|date:"d/m/Y" }}
+                    {% else %}
+                        {% now "d/m/Y" %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr>
+
+            <h5 class="fw-bold">Resumo / Evolução Clínica:</h5>
+            <p class="card-text bg-light p-3 border rounded">
+                {% if atendimento.observacoes %}
+                    {{ atendimento.observacoes|linebreaks }}
+                {% elif atendimento.descricao %}
+                    {{ atendimento.descricao|linebreaks }}
+                {% else %}
+                    Sem anotações registradas.
+                {% endif %}
+            </p>
+        </div>
+        <div class="card-footer text-muted text-center small">
+            Sistema Agenda Clínica — Gerado em {% now "d/m/Y H:i" %}
+        </div>
+    </div>
+
+</body>
+</html>

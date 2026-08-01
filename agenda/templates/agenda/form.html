@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">
+            {% if form.instance.pk %}
+                Editar Agendamento
+            {% else %}
+                Novo Agendamento
+            {% endif %}
+        </h4>
+    </div>
+
+    <div class="card-body">
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label font-weight-bold">Cliente</label>
+                    {{ form.cliente }}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label font-weight-bold">Profissional</label>
+                    {{ form.profissional }}
+                </div>
+            </div>
+
+            <!-- Duração da Sessão, Valor e Status -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label font-weight-bold">Duração da Sessão (minutos)</label>
+                    <select id="duracao_sessao" name="duracao_minutos" class="form-control" onchange="calcularHoraFimGeral()">
+                        <option value="30">30 minutos</option>
+                        <option value="45">45 minutos</option>
+                        <option value="60" selected>1 hora (60 min)</option>
+                        <option value="90">1 hora e 30 min (90 min)</option>
+                        <option value="120">2 horas (120 min)</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <label class="form-label font-weight-bold">Valor por Sessão</label>
+                    {{ form.valor }}
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label font-weight-bold">Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+
+            {% if not form.instance.pk %}
+            <!-- Painel Gerador de Pacotes/Recorrência -->
+            <div class="card border-info mb-4">
+                <div class="card-header bg-info text-white font-weight-bold">
+                    <i class="bi bi-calendar-range"></i> Gerador Automático de Pacotes/Sessões
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="small font-weight-bold">Qtd. Total de Sessões</label>
+                            <input type="number" id="gen_quantidade" class="form-control" value="8" min="1" max="100">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="small font-weight-bold">A partir da Data</label>
+                            <input type="date" id="gen_data_inicio" class="form-control">
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="small font-weight-bold">Horário Padrão</label>
+                            <input type="time" id="gen_hora_inicio" class="form-control" value="14:00">
+                        </div>
+
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-info btn-block" onclick="gerarSessoesAutomaticas()">
+                                <i class="bi bi-magic"></i> Gerar Datas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Seleção dos Dias da Semana -->
+                    <div class="row border-top pt-2">
+                        <div class="col-md-12">
+                            <label class="small font-weight-bold d-block mb-2">Dias da Semana Recorrentes:</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_1" value="1">
+                                    <label class="custom-control-label" for="dia_1">Segunda</label>
+                                </div>
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_2" value="2" checked>
+                                    <label class="custom-control-label" for="dia_2">Terça</label>
+                                </div>
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_3" value="3">
+                                    <label class="custom-control-label" for="dia_3">Quarta</label>
+                                </div>
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_4" value="4" checked>
+                                    <label class="custom-control-label" for="dia_4">Quinta</label>
+                                </div>
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_5" value="5">
+                                    <label class="custom-control-label" for="dia_5">Sexta</label>
+                                </div>
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_6" value="6">
+                                    <label class="custom-control-label" for="dia_6">Sábado</label>
+                                </div>
+                                <div class="custom-control custom-checkbox mr-3">
+                                    <input type="checkbox" class="custom-control-input chk-dia" id="dia_0" value="0">
+                                    <label class="custom-control-label" for="dia_0">Domingo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Bloco de Lista de Datas e Horários -->
+            <div class="card bg-light mb-3">
+                <div class="card-body">
+                    <h5 class="card-title text-secondary mb-3">Agenda das Sessões Geradas</h5>
+                    
+                    <div id="container-datas">
+                        <div class="row item-agendamento mb-2 align-items-center">
+                            <div class="col-md-4">
+                                <label class="small font-weight-bold">Data</label>
+                                <input type="date" name="datas[]" class="form-control campo-data" required>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="small font-weight-bold">Hora Início</label>
+                                <input type="time" name="horas_inicio[]" class="form-control campo-hora-inicio" onchange="calcularHoraFimLinha(this)" required>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="small font-weight-bold">Hora Fim (Calculado)</label>
+                                <input type="time" name="horas_fim[]" class="form-control campo-hora-fim" readonly>
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-end mt-3">
+                                <button type="button" class="btn btn-outline-danger btn-block" onclick="removerLinha(this)">
+                                    <i class="bi bi-trash"></i> Excluir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if not form.instance.pk %}
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="adicionarLinha()">
+                        <i class="bi bi-plus-circle"></i> Adicionar Mais Uma Data Manualmente
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label font-weight-bold">Observações</label>
+                    {{ form.observacoes }}
+                </div>
+            </div>
+
+            <hr>
+
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Salvar Agendamentos
+            </button>
+
+            <a href="{% url 'agenda' %}" class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- JavaScript para Gerador por Dias da Semana -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const fieldDataInicio = document.getElementById('gen_data_inicio');
+    if (fieldDataInicio) fieldDataInicio.value = hoje;
+});
+
+function calcularHoraFimLinha(inputHoraInicio) {
+    const linha = inputHoraInicio.closest('.item-agendamento');
+    const inputHoraFim = linha.querySelector('.campo-hora-fim');
+    const duracaoMinutos = parseInt(document.getElementById('duracao_sessao').value) || 0;
+
+    if (!inputHoraInicio.value) return;
+
+    const [horas, minutos] = inputHoraInicio.value.split(':').map(Number);
+    
+    let data = new Date();
+    data.setHours(horas);
+    data.setMinutes(minutos + duracaoMinutos);
+
+    const hFim = String(data.getHours()).padStart(2, '0');
+    const mFim = String(data.getMinutes()).padStart(2, '0');
+
+    inputHoraFim.value = `${hFim}:${mFim}`;
+}
+
+function calcularHoraFimGeral() {
+    document.querySelectorAll('.campo-hora-inicio').forEach(input => {
+        if (input.value) {
+            calcularHoraFimLinha(input);
+        }
+    });
+}
+
+function adicionarLinha() {
+    const container = document.getElementById('container-datas');
+    const primeiraLinha = container.querySelector('.item-agendamento');
+    const novaLinha = primeiraLinha.cloneNode(true);
+
+    novaLinha.querySelectorAll('input').forEach(input => input.value = '');
+    container.appendChild(novaLinha);
+}
+
+function removerLinha(btn) {
+    const linhas = document.querySelectorAll('.item-agendamento');
+    if (linhas.length > 1) {
+        btn.closest('.item-agendamento').remove();
+    } else {
+        alert('É necessário manter pelo menos uma data.');
+    }
+}
+
+// GERADOR POR DIAS ESPECÍFICOS DA SEMANA
+function gerarSessoesAutomaticas() {
+    const qtdTotal = parseInt(document.getElementById('gen_quantidade').value) || 1;
+    const dataInicioStr = document.getElementById('gen_data_inicio').value;
+    const horaInicioStr = document.getElementById('gen_hora_inicio').value;
+
+    // Coleta os dias da semana selecionados (0 = Dom, 1 = Seg, 2 = Ter, ...)
+    const diasSelecionados = Array.from(document.querySelectorAll('.chk-dia:checked'))
+                                  .map(chk => parseInt(chk.value));
+
+    if (!dataInicioStr || !horaInicioStr) {
+        alert('Por favor, informe a Data Inicial e o Horário Padrão.');
+        return;
+    }
+
+    if (diasSelecionados.length === 0) {
+        alert('Selecione pelo menos um dia da semana (ex: Terça e Quinta).');
+        return;
+    }
+
+    const container = document.getElementById('container-datas');
+    container.innerHTML = ''; // Limpa as linhas atuais
+
+    let dataAtual = new Date(dataInicioStr + 'T00:00:00');
+    let sessoesCriadas = 0;
+    
+    // Evita loop infinito limitando busca em até 365 dias futuros
+    let limiteDias = 0;
+
+    while (sessoesCriadas < qtdTotal && limiteDias < 365) {
+        const diaSemanaAtual = dataAtual.getDay(); // 0 a 6
+
+        // Se o dia atual da iteração for um dos dias selecionados pelo usuário
+        if (diasSelecionados.includes(diaSemanaAtual)) {
+            const ano = dataAtual.getFullYear();
+            const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+            const dia = String(dataAtual.getDate()).padStart(2, '0');
+            const dataStr = `${ano}-${mes}-${dia}`;
+
+            const div = document.createElement('div');
+            div.className = 'row item-agendamento mb-2 align-items-center';
+            div.innerHTML = `
+                <div class="col-md-4">
+                    <label class="small font-weight-bold">Data</label>
+                    <input type="date" name="datas[]" class="form-control campo-data" value="${dataStr}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="small font-weight-bold">Hora Início</label>
+                    <input type="time" name="horas_inicio[]" class="form-control campo-hora-inicio" value="${horaInicioStr}" onchange="calcularHoraFimLinha(this)" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="small font-weight-bold">Hora Fim (Calculado)</label>
+                    <input type="time" name="horas_fim[]" class="form-control campo-hora-fim" readonly>
+                </div>
+                <div class="col-md-2 d-flex align-items-end mt-3">
+                    <button type="button" class="btn btn-outline-danger btn-block" onclick="removerLinha(this)">
+                        <i class="bi bi-trash"></i> Excluir
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(div);
+
+            const inputHoraInicio = div.querySelector('.campo-hora-inicio');
+            calcularHoraFimLinha(inputHoraInicio);
+
+            sessoesCriadas++;
+        }
+
+        // Avança 1 dia na busca
+        dataAtual.setDate(dataAtual.getDate() + 1);
+        limiteDias++;
+    }
+}
+</script>
+
+{% endblock %}

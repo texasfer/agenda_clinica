@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
+<h4>
+
+{% if form.instance.pk %}
+
+Editar Cliente
+
+{% else %}
+
+Novo Cliente
+
+{% endif %}
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<form method="post">
+
+{% csrf_token %}
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+
+<label>Nome</label>
+
+{{ form.nome }}
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>CPF</label>
+
+{{ form.cpf }}
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>Data Nascimento</label>
+
+{{ form.nascimento }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-3 mb-3">
+
+<label>Telefone</label>
+
+{{ form.telefone }}
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>WhatsApp</label>
+
+{{ form.whatsapp }}
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<label>E-mail</label>
+
+{{ form.email }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-8 mb-3">
+
+<label>Endereço</label>
+
+{{ form.endereco }}
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+<label>Bairro</label>
+
+{{ form.bairro }}
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-4 mb-3">
+
+<label>Cidade</label>
+
+{{ form.cidade }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>UF</label>
+
+{{ form.uf }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>CEP</label>
+
+{{ form.cep }}
+
+</div>
+
+
+
+<div class="col-md-2 mb-3">
+
+<label>Valor Sessão</label>
+
+{{ form.valor_sessao }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label> Sessões realizadas</label>
+
+{{ form.sessoes_realizadas }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>Total Sessões</label>
+
+{{ form.total_sessoes }}
+
+</div>
+
+<div class="col-md-2 mb-3">
+
+<label>Status</label>
+
+{{ form.status }}
+
+</div>
+
+</div>
+
+<div class="mb-3">
+
+<label>Observações</label>
+
+{{ form.observacoes }}
+
+</div>
+
+<hr>
+
+<button class="btn btn-success">
+
+Salvar
+
+</button>
+
+<a href="{% url 'clientes' %}"
+class="btn btn-secondary">
+
+Cancelar
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

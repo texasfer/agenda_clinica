@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h3>Atendimentos</h3>
+
+</div>
+
+<form method="get" class="row mb-3">
+
+    <div class="col-md-4">
+
+        <input type="text"
+               name="q"
+               value="{{ pesquisa }}"
+               class="form-control"
+               placeholder="Pesquisar cliente">
+
+    </div>
+
+    <div class="col-md-2">
+
+        <button class="btn btn-primary">
+
+            Buscar
+
+        </button>
+
+    </div>
+
+</form>
+
+<table class="table table-striped table-hover">
+
+    <thead class="table-success">
+
+        <tr>
+
+            <th>Data</th>
+
+            <th>Cliente</th>
+
+            <th>Profissional</th>
+
+            <th>Status</th>
+
+            <th width="170">Ações</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for a in atendimentos %}
+
+        <tr>
+
+            <td>{{ a.agendamento.data|date:"d/m/Y" }}</td>
+
+            <td>{{ a.agendamento.cliente.nome }}</td>
+
+            <td>{{ a.agendamento.profissional }}</td>
+
+            <td>
+
+                {% if a.finalizado %}
+                    <span class="badge bg-success">
+                        Finalizado
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">
+                        Em Atendimento
+                    </span>
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <a href="{% url 'atendimento_editar' a.id %}"
+                   class="btn btn-primary btn-sm">
+
+                    <i class="bi bi-pencil"></i>
+
+                </a>
+
+                <a href="{% url 'atendimento_imprimir' a.id %}"
+                   class="btn btn-secondary btn-sm">
+
+                    <i class="bi bi-printer"></i>
+
+                </a>
+
+                <a href="{% url 'atendimento_excluir' a.id %}"
+                   class="btn btn-danger btn-sm"
+                   onclick="return confirm('Excluir atendimento?')">
+
+                    <i class="bi bi-trash"></i>
+
+                </a>
+
+            </td>
+
+        </tr>
+
+    {% empty %}
+
+        <tr>
+
+            <td colspan="5" class="text-center">
+
+                Nenhum atendimento encontrado.
+
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

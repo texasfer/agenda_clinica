@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+
+<div class="col-md-3">
+
+<a href="{% url 'relatorio_clientes' %}"
+
+class="btn btn-success w-100 mb-3">
+
+Clientes
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a href="{% url 'relatorio_agenda' %}"
+
+class="btn btn-primary w-100 mb-3">
+
+Agenda
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a href="{% url 'relatorio_atendimentos' %}"
+
+class="btn btn-warning w-100 mb-3">
+
+Atendimentos
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a href="{% url 'relatorio_financeiro' %}"
+
+class="btn btn-danger w-100 mb-3">
+
+Financeiro
+
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}
