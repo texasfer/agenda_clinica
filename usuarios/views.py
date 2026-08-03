@@ -11,7 +11,7 @@ from clientes.models import Cliente
 from agenda.models import Agendamento
 
 
-def login_view(request):
+def login(request):
 
     if request.method=="POST":
 
