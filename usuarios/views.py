@@ -11,7 +11,7 @@ from clientes.models import Cliente
 from agenda.models import Agendamento
 
 
-def login(request):
+def login_view(request):
 
     if request.method=="POST":
 
@@ -35,27 +35,6 @@ def login(request):
         "erro":"Usuário ou senha inválidos."
     })
     return render(request,"usuarios/login.html")
-
-
-from datetime import date
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum
-from django.db.models.functions import TruncDay
-from django.shortcuts import render, redirect
-
-from agenda.models import Agendamento
-from clientes.models import Cliente
-
-from datetime import date
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum, Q
-from django.db.models.functions import TruncDay
-from django.shortcuts import render, redirect
-
-from agenda.models import Agendamento
-from clientes.models import Cliente
 
 
 @login_required
@@ -173,10 +152,6 @@ def dashboard(request):
     return render(request, "usuarios/dashboard.html", context)
 
 
-def logout_view(request):
-    logout(request)
-    return redirect("login")
-
-def logout_view(request):
+def logout(request):
     logout(request)
     return redirect("login")
