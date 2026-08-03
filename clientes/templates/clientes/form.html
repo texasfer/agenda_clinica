@@ -2,197 +2,173 @@
 
 {% block content %}
 
-<div class="card shadow">
-
-<div class="card-header bg-success text-white">
-
-<h4>
-
-{% if form.instance.pk %}
-
-Editar Cliente
-
-{% else %}
-
-Novo Cliente
-
-{% endif %}
-
-</h4>
-
-</div>
-
-<div class="card-body">
-
-<form method="post">
-
-{% csrf_token %}
-
-<div class="row">
-
-<div class="col-md-6 mb-3">
-
-<label>Nome</label>
-
-{{ form.nome }}
-
-</div>
-
-<div class="col-md-3 mb-3">
-
-<label>CPF</label>
-
-{{ form.cpf }}
-
-</div>
-
-<div class="col-md-3 mb-3">
-
-<label>Data Nascimento</label>
-
-{{ form.nascimento }}
-
-</div>
-
-</div>
-
-<div class="row">
-
-<div class="col-md-3 mb-3">
-
-<label>Telefone</label>
-
-{{ form.telefone }}
-
-</div>
-
-<div class="col-md-3 mb-3">
-
-<label>WhatsApp</label>
-
-{{ form.whatsapp }}
-
-</div>
-
-<div class="col-md-6 mb-3">
-
-<label>E-mail</label>
-
-{{ form.email }}
-
-</div>
-
-</div>
-
-<div class="row">
-
-<div class="col-md-8 mb-3">
-
-<label>Endereço</label>
-
-{{ form.endereco }}
-
-</div>
-
-<div class="col-md-4 mb-3">
-
-<label>Bairro</label>
-
-{{ form.bairro }}
-
-</div>
-
-</div>
-
-<div class="row">
-
-<div class="col-md-4 mb-3">
-
-<label>Cidade</label>
-
-{{ form.cidade }}
-
-</div>
-
-<div class="col-md-2 mb-3">
-
-<label>UF</label>
-
-{{ form.uf }}
-
-</div>
-
-<div class="col-md-2 mb-3">
-
-<label>CEP</label>
-
-{{ form.cep }}
-
-</div>
-
-
-
-<div class="col-md-2 mb-3">
-
-<label>Valor Sessão</label>
-
-{{ form.valor_sessao }}
-
-</div>
-
-<div class="col-md-2 mb-3">
-
-<label> Sessões realizadas</label>
-
-{{ form.sessoes_realizadas }}
-
-</div>
-
-<div class="col-md-2 mb-3">
-
-<label>Total Sessões</label>
-
-{{ form.total_sessoes }}
-
-</div>
-
-<div class="col-md-2 mb-3">
-
-<label>Status</label>
-
-{{ form.status }}
-
-</div>
-
-</div>
-
-<div class="mb-3">
-
-<label>Observações</label>
-
-{{ form.observacoes }}
-
-</div>
-
-<hr>
-
-<button class="btn btn-success">
-
-Salvar
-
-</button>
-
-<a href="{% url 'clientes' %}"
-class="btn btn-secondary">
-
-Cancelar
-
-</a>
-
-</form>
-
-</div>
-
+<div class="container-fluid py-3">
+    <div class="card shadow-sm border-0">
+
+        <!-- Header Profissional -->
+        <div class="card-header bg-success text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-person-gear me-2"></i>
+                {% if form.instance.pk %}
+                    Editar Cliente: {{ form.instance.nome }}
+                {% else %}
+                    Novo Cliente
+                {% endif %}
+            </h5>
+            <a href="{% url 'clientes' %}" class="btn btn-sm btn-light fw-bold text-success">
+                <i class="bi bi-arrow-left me-1"></i> Voltar
+            </a>
+        </div>
+
+        <div class="card-body p-4">
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger mb-4">
+                        <strong>Atenção!</strong> Por favor, verifique os campos abaixo:
+                        <ul class="mb-0 mt-1">
+                            {% for field, errors in form.errors.items %}
+                                <li>{{ field|title }}: {{ errors.0 }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <!-- 1. DADOS PESSOAIS -->
+                <div class="border-start border-4 border-success ps-3 mb-4">
+                    <h6 class="text-success fw-bold text-uppercase mb-0">1. Dados Pessoais</h6>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Nome Completo *</label>
+                        {{ form.nome }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">CPF</label>
+                        {{ form.cpf }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Data de Nascimento</label>
+                        {{ form.nascimento }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Telefone</label>
+                        {{ form.telefone }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">WhatsApp</label>
+                        {{ form.whatsapp }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">E-mail</label>
+                        {{ form.email }}
+                    </div>
+                </div>
+
+                <!-- 2. ENDEREÇO -->
+                <div class="border-start border-4 border-success ps-3 mb-4">
+                    <h6 class="text-success fw-bold text-uppercase mb-0">2. Endereço</h6>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">CEP</label>
+                        {{ form.cep }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Logradouro / Endereço</label>
+                        {{ form.endereco }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Bairro</label>
+                        {{ form.bairro }}
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Cidade</label>
+                        {{ form.cidade }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">UF</label>
+                        {{ form.uf }}
+                    </div>
+                </div>
+
+                <!-- 3. PLANO E FINANCEIRO -->
+                <div class="border-start border-4 border-success ps-3 mb-4">
+                    <h6 class="text-success fw-bold text-uppercase mb-0">3. Plano & Financeiro</h6>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Valor Sessão (R$)</label>
+                        {{ form.valor_sessao }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Dia do Vencimento</label>
+                        {% if form.dia_vencimento %}
+                            {{ form.dia_vencimento }}
+                        {% elif form.dias_vencimento %}
+                            {{ form.dias_vencimento }}
+                        {% else %}
+                            <input type="number" name="dia_vencimento" class="form-control" placeholder="Ex: 5, 10, 15">
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Sessões Feitas</label>
+                        {% if form.sessoes_realizadas %}
+                            {{ form.sessoes_realizadas }}
+                        {% else %}
+                            <input type="number" name="sessoes_realizadas" class="form-control" value="0">
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Total Sessões</label>
+                        {{ form.total_sessoes }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Status</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+
+                <!-- OBSERVAÇÕES -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Observações Clínicas / Gerais</label>
+                    {{ form.observacoes }}
+                </div>
+
+                <hr class="my-4">
+
+                <!-- BOTÕES FIXOS E VISÍVEIS -->
+                <div class="d-flex justify-content-end gap-2 pb-3">
+                    <a href="{% url 'clientes' %}" class="btn btn-secondary px-4">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success px-4 fw-bold">
+                        <i class="bi bi-check-circle me-1"></i> Salvar Cliente
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
 </div>
 
 {% endblock %}

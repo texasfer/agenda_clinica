@@ -3,149 +3,365 @@
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-
     <h3>Agenda</h3>
+    
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="restaurarTodasColunas()">
+            <i class="bi bi-eye"></i> Exibir Todas as Colunas
+        </button>
 
-    <a href="{% url 'agenda_novo' %}" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i>
-        Novo Agendamento
-    </a>
-
+        <a href="{% url 'agenda_novo' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Novo Agendamento
+        </a>
+    </div>
 </div>
 
+
+<!-- Filtro Geral -->
 <form method="get" class="row mb-3">
-
     <div class="col-md-4">
-
         <input
             type="text"
             name="q"
             value="{{ pesquisa }}"
             class="form-control"
-            placeholder="Pesquisar cliente">
-
+            placeholder="Pesquisar cliente geral...">
     </div>
-
     <div class="col-md-2">
-
-        <button class="btn btn-primary">
-
-            Buscar
-
-        </button>
-
+        <button type="submit" class="btn btn-primary">Buscar</button>
     </div>
-
 </form>
 
-<table id="tabelaAgenda" class="table table-striped table-hover align-middle">
+<!-- FORMULÁRIO DA TABELA -->
+<form id="formTabelaAgenda" method="post" action="{% url 'agenda_excluir_massa' %}">
+    {% csrf_token %}
 
-    <thead class="table-dark">
+    <!-- Painel de Ações em Massa (Soma e Exclusão) -->
+    <div id="painelAcoes" class="alert alert-info d-none align-items-center justify-content-between mb-3 shadow-sm py-2">
+        <div>
+            <i class="bi bi-check-square me-2"></i>
+            <strong><span id="qtdSelecionados">0</span></strong> item(ns) selecionado(s) | 
+            <strong>Soma Total: R$ <span id="somaValores">0,00</span></strong>
+        </div>
+        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir os agendamentos selecionados?')">
+            <i class="bi bi-trash"></i> Excluir Selecionados
+        </button>
+    </div>
 
-        <tr>
+    <table class="table table-hover mb-0" id="tabelaAgenda">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 40px;">
+                    <input type="checkbox" id="selectAll">
+                </th>
+                
+                <!-- Data + Dia da Semana -->
+                <th class="col-data">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Data / Dia</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-dark p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu p-2 shadow dropdown-menu-end">
+                                <input type="text" class="form-control form-control-sm mb-2 input-filtro-coluna" data-col-index="1" placeholder="Filtrar data...">
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(1, 'asc')">Mais Antigos</button>
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(1, 'desc')">Mais Recentes</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item btn-sm text-danger" onclick="ocultarColuna('col-data')">Ocultar Coluna</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
 
-            <th>Data</th>
+                <!-- Horário Início -->
+                <th class="col-inicio">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Início</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-dark p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu p-2 shadow dropdown-menu-end">
+                                <input type="text" class="form-control form-control-sm mb-2 input-filtro-coluna" data-col-index="2" placeholder="Filtrar horário...">
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(2, 'asc')">Crescente</button>
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(2, 'desc')">Decrescente</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item btn-sm text-danger" onclick="ocultarColuna('col-inicio')">Ocultar Coluna</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
 
-            <th>Hora</th>
+                <!-- Cliente -->
+                <th class="col-cliente">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Cliente</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-dark p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu p-2 shadow dropdown-menu-end">
+                                <input type="text" class="form-control form-control-sm mb-2 input-filtro-coluna" data-col-index="3" placeholder="Filtrar cliente...">
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(3, 'asc')">A - Z</button>
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(3, 'desc')">Z - A</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item btn-sm text-danger" onclick="ocultarColuna('col-cliente')">Ocultar Coluna</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
 
-            <th>Cliente</th>
+                <!-- Profissional -->
+                <th class="col-profissional">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Profissional</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-dark p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu p-2 shadow dropdown-menu-end">
+                                <input type="text" class="form-control form-control-sm mb-2 input-filtro-coluna" data-col-index="4" placeholder="Filtrar prof...">
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(4, 'asc')">A - Z</button>
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(4, 'desc')">Z - A</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item btn-sm text-danger" onclick="ocultarColuna('col-profissional')">Ocultar Coluna</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
 
-            <th>Profissional</th>
+                <!-- Status -->
+                <th class="col-status">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Status</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-dark p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu p-2 shadow dropdown-menu-end">
+                                <input type="text" class="form-control form-control-sm mb-2 input-filtro-coluna" data-col-index="5" placeholder="Filtrar status...">
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(5, 'asc')">A - Z</button>
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(5, 'desc')">Z - A</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item btn-sm text-danger" onclick="ocultarColuna('col-status')">Ocultar Coluna</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
 
-            <th>Status</th>
+                <!-- Valor -->
+                <th class="col-valor">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Valor</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-dark p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                &#8942;
+                            </button>
+                            <div class="dropdown-menu p-2 shadow dropdown-menu-end">
+                                <input type="text" class="form-control form-control-sm mb-2 input-filtro-coluna" data-col-index="6" placeholder="Filtrar valor...">
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(6, 'asc', true)">Menor Valor</button>
+                                <button type="button" class="dropdown-item btn-sm" onclick="ordenarTabela(6, 'desc', true)">Maior Valor</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item btn-sm text-danger" onclick="ocultarColuna('col-valor')">Ocultar Coluna</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in agendamentos %}
+            <tr>
+                <td>
+                    <input type="checkbox" name="ids" class="row-check" value="{{ a.id }}" data-valor="{{ a.valor|stringformat:'.2f' }}">
+                </td>
+                <!-- Exibe Data + Dia Abreviado -->
+                <td class="col-data">
+                    {{ a.data|date:"d/m/Y" }}
+                    <small class="text-muted">({{ a.data|date:"D" }})</small>
+                </td>
+                <td class="col-inicio">{{ a.hora_inicio }}</td>
+                <td class="col-cliente">{{ a.cliente.nome }}</td>
+                <td class="col-profissional">{{ a.profissional }}</td>
+                <td class="col-status">
+                    {% if a.status == "AGENDADO" %}
+                        <span class="badge bg-primary">Agendado</span>
+                    {% elif a.status == "CONFIRMADO" %}
+                        <span class="badge bg-success">Confirmado</span>
+                    {% elif a.status == "ATENDIDO" %}
+                        <span class="badge bg-dark">Atendido</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ a.get_status_display|default:a.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="col-valor">R$ {{ a.valor|floatformat:2 }}</td>
+                            <td>
+                    {% if a.id %}
+                        {% if a.status != "ATENDIDO" %}
+                            <a href="{% url 'atendimento_novo_agendamento' a.id %}" class="btn btn-sm btn-outline-primary" title="Iniciar Atendimento">
+                                <i class="bi bi-stethoscope"></i> Atender
+                            </a>
+                        {% else %}
+                            <span class="badge bg-secondary">Concluído</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    Nenhum agendamento encontrado.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
 
-            <th>Valor</th>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. CARREGAR ESTADO DE COLUNAS OCULTAS
+    const listaColunas = ['col-data', 'col-inicio', 'col-cliente', 'col-profissional', 'col-status', 'col-valor'];
+    listaColunas.forEach(colClass => {
+        if (localStorage.getItem('col_hidden_' + colClass) === 'true') {
+            document.querySelectorAll('.' + colClass).forEach(el => el.style.display = 'none');
+        }
+    });
 
-            <th width="170">Ações</th>
+    // 2. IMPEDIR QUE O DROPDOWN FECHE AO DIGITAR NO INPUT
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
 
-        </tr>
+    // 3. FILTRO INDIVIDUAL POR COLUNA
+    const inputsFiltro = document.querySelectorAll('.input-filtro-coluna');
+    inputsFiltro.forEach(input => {
+        input.addEventListener('keyup', filtrarTabela);
+    });
 
-    </thead>
+    function filtrarTabela() {
+        const tabela = document.getElementById('tabelaAgenda');
+        const linhas = tabela.querySelectorAll('tbody tr');
 
-    <tbody>
+        linhas.forEach(linha => {
+            let visivel = true;
 
-    {% for i in agendamentos %}
+            inputsFiltro.forEach(input => {
+                const colIndex = parseInt(input.getAttribute('data-col-index'));
+                const termo = input.value.toLowerCase().trim();
 
-        <tr>
+                if (termo && linha.cells[colIndex]) {
+                    const textoCelula = linha.cells[colIndex].textContent.toLowerCase();
+                    if (!textoCelula.includes(termo)) {
+                        visivel = false;
+                    }
+                }
+            });
 
-            <td>{{ i.data|date:"d/m/Y" }}</td>
+            linha.style.display = visivel ? '' : 'none';
+        });
 
-            <td>{{ i.hora_inicio }}</td>
+        atualizarCalculos();
+    }
 
-            <td>{{ i.cliente.nome }}</td>
+    // 4. SELEÇÃO, SOMA E CÁLCULO
+    const selectAll = document.getElementById('selectAll');
+    const rowChecks = document.querySelectorAll('.row-check');
+    const painelAcoes = document.getElementById('painelAcoes');
+    const qtdSelecionados = document.getElementById('qtdSelecionados');
+    const somaValores = document.getElementById('somaValores');
 
-            <td>{{ i.profissional }}</td>
+    function atualizarCalculos() {
+        let soma = 0;
+        let quantidade = 0;
 
-            <td>
+        rowChecks.forEach(check => {
+            const linha = check.closest('tr');
+            if (check.checked && linha.style.display !== 'none') {
+                let valStr = check.getAttribute('data-valor') || "0";
+                valStr = valStr.replace(',', '.');
+                soma += parseFloat(valStr) || 0;
+                quantidade++;
+            }
+        });
 
-                {% if i.status == "AGENDADO" %}
-                    <span class="badge bg-primary">Agendado</span>
+        if (quantidade > 0) {
+            painelAcoes.classList.remove('d-none');
+            painelAcoes.classList.add('d-flex');
+            qtdSelecionados.textContent = quantidade;
+            somaValores.textContent = soma.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else {
+            painelAcoes.classList.add('d-none');
+            painelAcoes.classList.remove('d-flex');
+        }
 
-                {% elif i.status == "CONFIRMADO" %}
-                    <span class="badge bg-success">Confirmado</span>
+        if (selectAll) {
+            selectAll.checked = (quantidade === rowChecks.length && rowChecks.length > 0);
+        }
+    }
 
-                {% elif i.status == "ATENDIMENTO" %}
-                    <span class="badge bg-warning text-dark">Em Atendimento</span>
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            rowChecks.forEach(check => {
+                if (check.closest('tr').style.display !== 'none') {
+                    check.checked = this.checked;
+                }
+            });
+            atualizarCalculos();
+        });
+    }
 
-                {% elif i.status == "ATENDIDO" %}
-                    <span class="badge bg-dark">Atendido</span>
+    rowChecks.forEach(check => {
+        check.addEventListener('change', atualizarCalculos);
+    });
+});
 
-                {% elif i.status == "FALTOU" %}
-                    <span class="badge bg-danger">Faltou</span>
+// --- FUNÇÕES GLOBAIS ---
+function ocultarColuna(colClass) {
+    document.querySelectorAll('.' + colClass).forEach(el => el.style.display = 'none');
+    localStorage.setItem('col_hidden_' + colClass, 'true');
+}
 
-                {% else %}
-                    <span class="badge bg-secondary">{{ i.get_status_display }}</span>
+function restaurarTodasColunas() {
+    ['col-data', 'col-inicio', 'col-cliente', 'col-profissional', 'col-status', 'col-valor'].forEach(colClass => {
+        document.querySelectorAll('.' + colClass).forEach(el => el.style.display = '');
+        localStorage.removeItem('col_hidden_' + colClass);
+    });
+}
 
-                {% endif %}
+function ordenarTabela(colIndex, ordem, isNumerico = false) {
+    const tabela = document.getElementById('tabelaAgenda');
+    const tbody = tabela.querySelector('tbody');
+    const linhas = Array.from(tbody.querySelectorAll('tr'));
 
-            </td>
+    linhas.sort((a, b) => {
+        let valA = a.cells[colIndex] ? a.cells[colIndex].textContent.trim() : '';
+        let valB = b.cells[colIndex] ? b.cells[colIndex].textContent.trim() : '';
 
-            <td>R$ {{ i.valor }}</td>
+        if (isNumerico) {
+            valA = parseFloat(valA.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+            valB = parseFloat(valB.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+            return ordem === 'asc' ? valA - valB : valB - valA;
+        }
 
-            <td>
+        // Ajuste para datas dd/mm/yyyy
+        if (valA.includes('/') && valA.length >= 10) {
+            const parteDataA = valA.substring(0, 10);
+            const parteDataB = valB.substring(0, 10);
+            const [dA, mA, yA] = parteDataA.split('/');
+            const [dB, mB, yB] = parteDataB.split('/');
+            valA = `${yA}${mA}${dA}`;
+            valB = `${yB}${mB}${dB}`;
+        }
 
-                <a href="{% url 'agenda_editar' i.id %}"
-                   class="btn btn-sm btn-primary">
+        return ordem === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    });
 
-                    <i class="bi bi-pencil"></i>
-
-                </a>
-
-                <a href="{% url 'agenda_excluir' i.id %}"
-                   class="btn btn-sm btn-danger"
-                   onclick="return confirm('Excluir este agendamento?')">
-
-                    <i class="bi bi-trash"></i>
-
-                </a>
-
-                <a href="{% url 'atendimento_novo' i.id %}"
-   class="btn btn-success btn-sm">
-
-    <i class="bi bi-heart-pulse"></i>
-
-</a>
-
-            </td>
-
-        </tr>
-
-    {% empty %}
-
-        <tr>
-
-            <td colspan="7" class="text-center">
-
-                Nenhum agendamento encontrado.
-
-            </td>
-
-        </tr>
-
-    {% endfor %}
-
-    </tbody>
-
-</table>
+    linhas.forEach(linha => tbody.appendChild(linha));
+}
+</script>
 
 {% endblock %}

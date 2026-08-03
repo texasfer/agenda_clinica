@@ -5,24 +5,43 @@
 <div class="d-flex justify-content-between mb-3">
 
     <h3>Financeiro</h3>
-
-    <div>
-
-        <span class="badge bg-danger">
-
-            Receber
-            R$ {{ total_receber }}
-
-        </span>
-
-        <span class="badge bg-success">
-
-            Pago
-            R$ {{ total_pago }}
-
-        </span>
-
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h6 class="card-title">A Receber (Lançamentos)</h6>
+                <h3>R$ {{ total_receber|floatformat:2 }}</h3>
+            </div>
+        </div>
     </div>
+
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title">Previsto (Agendados)</h6>
+                <h3>R$ {{ total_agendados|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title">Atendimentos Finalizados</h6>
+                <h3>R$ {{ total_finalizados|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title">Total Pago</h6>
+                <h3>R$ {{ total_pago|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
 
 </div>
 

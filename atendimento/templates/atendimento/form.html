@@ -5,57 +5,40 @@
 <div class="card shadow">
 
     <div class="card-header bg-success text-white">
-
-        <h4>
-
-            Atendimento
-
-        </h4>
-
+        <h4 class="mb-0">Atendimento</h4>
     </div>
 
     <div class="card-body">
 
+        <!-- Dados vindos do agendamento -->
         <div class="row mb-3">
 
             <div class="col-md-6">
-
                 <label><b>Cliente</b></label>
-
                 <input class="form-control"
-                       value="{{ agenda.cliente.nome }}"
+                       value="{{ agendamento.cliente.nome|default:agendamento.cliente }}"
                        readonly>
-
             </div>
 
             <div class="col-md-2">
-
                 <label><b>Data</b></label>
-
                 <input class="form-control"
-                       value="{{ agenda.data|date:'d/m/Y' }}"
+                       value="{{ agendamento.data|date:'d/m/Y' }}"
                        readonly>
-
             </div>
 
             <div class="col-md-2">
-
                 <label><b>Hora</b></label>
-
                 <input class="form-control"
-                       value="{{ agenda.hora_inicio }}"
-                       readonly>
-
+                    value="{{ agendamento.hora_inicio }}"
+                    readonly>
             </div>
 
             <div class="col-md-2">
-
                 <label><b>Valor</b></label>
-
                 <input class="form-control"
-                       value="R$ {{ agenda.valor }}"
+                       value="R$ {{ agendamento.valor|default:'0,00' }}"
                        readonly>
-
             </div>
 
         </div>
@@ -67,19 +50,13 @@
             <div class="row">
 
                 <div class="col-md-6 mb-3">
-
                     <label>Queixa Principal</label>
-
                     {{ form.queixa }}
-
                 </div>
 
                 <div class="col-md-6 mb-3">
-
                     <label>Anamnese</label>
-
                     {{ form.anamnese }}
-
                 </div>
 
             </div>
@@ -87,54 +64,36 @@
             <div class="row">
 
                 <div class="col-md-6 mb-3">
-
                     <label>Evolução</label>
-
                     {{ form.evolucao }}
-
                 </div>
 
                 <div class="col-md-6 mb-3">
-
                     <label>Procedimentos</label>
-
                     {{ form.procedimentos }}
-
                 </div>
 
             </div>
 
             <div class="mb-3">
-
                 <label>Conduta</label>
-
                 {{ form.conduta }}
-
             </div>
 
             <div class="mb-3">
-
                 <label>Observações</label>
-
                 {{ form.observacoes }}
-
             </div>
 
             <hr>
 
-            <button class="btn btn-success">
-
+            <button type="submit" class="btn btn-success">
                 <i class="bi bi-check-circle"></i>
-
                 Finalizar Atendimento
-
             </button>
 
-            <a href="{% url 'agenda' %}"
-               class="btn btn-secondary">
-
+            <a href="{% url 'agenda' %}" class="btn btn-secondary">
                 Cancelar
-
             </a>
 
         </form>
@@ -142,5 +101,29 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const selectCliente = document.querySelector('select[name="cliente"]');
+    const inputValor = document.querySelector('input[name="valor"]');
+
+    if (selectCliente && inputValor) {
+        selectCliente.addEventListener('change', function() {
+            const clienteId = this.value;
+            
+            if (!clienteId) return;
+
+            fetch(`/api/cliente/${clienteId}/valor/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso && data.valor !== undefined) {
+                        inputValor.value = data.valor.toFixed(2);
+                    }
+                })
+                .catch(err => console.error("Erro ao carregar o valor do cliente no atendimento:", err));
+        });
+    }
+});
+</script>
 
 {% endblock %}

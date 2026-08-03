@@ -36,11 +36,11 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label font-weight-bold">Duração da Sessão (minutos)</label>
                     <select id="duracao_sessao" name="duracao_minutos" class="form-control" onchange="calcularHoraFimGeral()">
-                        <option value="30">30 minutos</option>
-                        <option value="45">45 minutos</option>
-                        <option value="60" selected>1 hora (60 min)</option>
-                        <option value="90">1 hora e 30 min (90 min)</option>
-                        <option value="120">2 horas (120 min)</option>
+                        <option value="30" {% if agendamento.duracao_minutos == 30 or form.duracao_minutos.value == 30 %}selected{% endif %}>30 minutos</option>
+                        <option value="45" {% if agendamento.duracao_minutos == 45 or form.duracao_minutos.value == 45 %}selected{% endif %}>45 minutos</option>
+                        <option value="60" {% if not agendamento.duracao_minutos or agendamento.duracao_minutos == 60 or form.duracao_minutos.value == 60 %}selected{% endif %}>1 hora (60 min)</option>
+                        <option value="90" {% if agendamento.duracao_minutos == 90 or form.duracao_minutos.value == 90 %}selected{% endif %}>1 hora e 30 min (90 min)</option>
+                        <option value="120" {% if agendamento.duracao_minutos == 120 or form.duracao_minutos.value == 120 %}selected{% endif %}>2 horas (120 min)</option>
                     </select>
                 </div>
                 
@@ -134,12 +134,21 @@
                         <div class="row item-agendamento mb-2 align-items-center">
                             <div class="col-md-4">
                                 <label class="small font-weight-bold">Data</label>
-                                <input type="date" name="datas[]" class="form-control campo-data" required>
+                                <input type="date" 
+                                       name="datas[]" 
+                                       class="form-control campo-data" 
+                                       value="{% if form.instance.pk %}{{ agendamento.data|date:'Y-m-d' }}{% endif %}" 
+                                       required>
                             </div>
 
-                            <div class="col-md-3">
+                           <div class="col-md-3">
                                 <label class="small font-weight-bold">Hora Início</label>
-                                <input type="time" name="horas_inicio[]" class="form-control campo-hora-inicio" onchange="calcularHoraFimLinha(this)" required>
+                                <input type="time" 
+                                    name="horas_inicio[]" 
+                                    class="form-control campo-hora-inicio" 
+                                    value="{% if form.instance.pk %}{{ agendamento.hora_inicio|time:'H:i' }}{% endif %}" 
+                                    onchange="calcularHoraFimLinha(this)" 
+                                    required>
                             </div>
 
                             <div class="col-md-3">
@@ -192,6 +201,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const hoje = new Date().toISOString().split('T')[0];
     const fieldDataInicio = document.getElementById('gen_data_inicio');
     if (fieldDataInicio) fieldDataInicio.value = hoje;
+
+    // Garante que o horário final seja calculado logo ao abrir a tela de edição
+    calcularHoraFimGeral();
 });
 
 function calcularHoraFimLinha(inputHoraInicio) {
@@ -240,12 +252,12 @@ function removerLinha(btn) {
 }
 
 // GERADOR POR DIAS ESPECÍFICOS DA SEMANA
+// GERADOR POR DIAS ESPECÍFICOS DA SEMANA
 function gerarSessoesAutomaticas() {
     const qtdTotal = parseInt(document.getElementById('gen_quantidade').value) || 1;
     const dataInicioStr = document.getElementById('gen_data_inicio').value;
     const horaInicioStr = document.getElementById('gen_hora_inicio').value;
 
-    // Coleta os dias da semana selecionados (0 = Dom, 1 = Seg, 2 = Ter, ...)
     const diasSelecionados = Array.from(document.querySelectorAll('.chk-dia:checked'))
                                   .map(chk => parseInt(chk.value));
 
@@ -260,18 +272,15 @@ function gerarSessoesAutomaticas() {
     }
 
     const container = document.getElementById('container-datas');
-    container.innerHTML = ''; // Limpa as linhas atuais
+    container.innerHTML = '';
 
     let dataAtual = new Date(dataInicioStr + 'T00:00:00');
     let sessoesCriadas = 0;
-    
-    // Evita loop infinito limitando busca em até 365 dias futuros
     let limiteDias = 0;
 
     while (sessoesCriadas < qtdTotal && limiteDias < 365) {
-        const diaSemanaAtual = dataAtual.getDay(); // 0 a 6
+        const diaSemanaAtual = dataAtual.getDay();
 
-        // Se o dia atual da iteração for um dos dias selecionados pelo usuário
         if (diasSelecionados.includes(diaSemanaAtual)) {
             const ano = dataAtual.getFullYear();
             const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
@@ -287,7 +296,12 @@ function gerarSessoesAutomaticas() {
                 </div>
                 <div class="col-md-3">
                     <label class="small font-weight-bold">Hora Início</label>
-                    <input type="time" name="horas_inicio[]" class="form-control campo-hora-inicio" value="${horaInicioStr}" onchange="calcularHoraFimLinha(this)" required>
+                    <input type="time" 
+                           name="horas_inicio[]" 
+                           class="form-control campo-hora-inicio" 
+                           value="${horaInicioStr}" 
+                           onchange="calcularHoraFimLinha(this)" 
+                           required>
                 </div>
                 <div class="col-md-3">
                     <label class="small font-weight-bold">Hora Fim (Calculado)</label>
@@ -308,11 +322,32 @@ function gerarSessoesAutomaticas() {
             sessoesCriadas++;
         }
 
-        // Avança 1 dia na busca
         dataAtual.setDate(dataAtual.getDate() + 1);
         limiteDias++;
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const selectCliente = document.querySelector('select[name="cliente"]');
+    const inputValor = document.querySelector('input[name="valor"]');
+
+    if (selectCliente && inputValor) {
+        selectCliente.addEventListener('change', function() {
+            const clienteId = this.value;
+            
+            if (!clienteId) return;
+
+            fetch(`/api/cliente/${clienteId}/valor/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso && data.valor !== undefined) {
+                        inputValor.value = data.valor.toFixed(2);
+                    }
+                })
+                .catch(err => console.error("Erro ao carregar o valor do cliente:", err));
+        });
+    }
+});
 </script>
 
 {% endblock %}

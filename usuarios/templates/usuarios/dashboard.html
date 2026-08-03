@@ -115,36 +115,59 @@
         </div>
     </div>
 
-    <!-- NOVO: Painel de Visão Panorâmica (Mês e Ano) -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow bg-light">
-                <div class="card-header bg-dark text-white fw-bold">
-                    <i class="bi bi-bar-chart-fill me-2"></i> Visão Panorâmica de Desempenho
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3 border-end">
-                            <span class="text-muted d-block small">Agendamentos no Mês</span>
-                            <span class="fs-3 fw-bold text-primary">{{ agendamentos_mes }}</span>
-                        </div>
-                        <div class="col-md-3 border-end">
-                            <span class="text-muted d-block small">Atendimentos no Mês</span>
-                            <span class="fs-3 fw-bold text-success">{{ atendimentos_mes }}</span>
-                        </div>
-                        <div class="col-md-3 border-end">
-                            <span class="text-muted d-block small">Agendamentos no Ano ({{ ano_atual }})</span>
-                            <span class="fs-3 fw-bold text-info">{{ agendamentos_ano }}</span>
-                        </div>
-                        <div class="col-md-3">
-                            <span class="text-muted d-block small">Previsto Mês (R$)</span>
-                            <span class="fs-3 fw-bold text-dark">R$ {{ faturamento_mes|floatformat:2 }}</span>
-                        </div>
-                    </div>
-                </div>
+<!-- Visão Financeira -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-dark text-white fw-bold py-3 d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-wallet2 me-2"></i> Visão Financeira</span>
+        <span class="badge bg-secondary">Visão Geral + Mês Filtrado</span>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-3 text-center">
+            
+            <!-- 1. Previsto no Mês -->
+            <div class="col-md-3 border-end">
+                <span class="text-muted small fw-bold text-uppercase d-block mb-1">
+                    Previsto no Mês (Agendados)
+                </span>
+                <h3 class="text-primary fw-bold mb-0">
+                    R$ {{ previsto_mes|floatformat:2 }}
+                </h3>
             </div>
+
+            <!-- 2. A Receber no Mês -->
+            <div class="col-md-3 border-end">
+                <span class="text-muted small fw-bold text-uppercase d-block mb-1">
+                    A Receber no Mês (Atendidos)
+                </span>
+                <h3 class="text-info fw-bold mb-0">
+                    R$ {{ a_receber_mes|floatformat:2 }}
+                </h3>
+            </div>
+
+            <!-- 3. Total Previsto Geral -->
+            <div class="col-md-3 border-end">
+                <span class="text-muted small fw-bold text-uppercase d-block mb-1">
+                    Total Previsto (Acumulado)
+                </span>
+                <h3 class="text-warning fw-bold mb-0">
+                    R$ {{ total_previsto_geral|floatformat:2 }}
+                </h3>
+            </div>
+
+            <!-- 4. Total A Receber Geral -->
+            <div class="col-md-3">
+                <span class="text-muted small fw-bold text-uppercase d-block mb-1">
+                    Total A Receber (Acumulado)
+                </span>
+                <h3 class="text-success fw-bold mb-0">
+                    R$ {{ total_a_receber_geral|floatformat:2 }}
+                </h3>
+            </div>
+
         </div>
     </div>
+</div>
+
 
     <!-- Tabela e Ações Rápida -->
     <div class="row">

@@ -30,3 +30,5 @@ class Atendimento(models.Model):
 
     def __str__(self):
         return self.agendamento.cliente.nome
+
+

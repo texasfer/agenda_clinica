@@ -3,43 +3,39 @@ from .models import Cliente
 
 
 class ClienteForm(forms.ModelForm):
-    # Sobrescrevemos apenas a data para aceitar o formato vindo do HTML
     nascimento = forms.DateField(
         label="Data de Nascimento",
-        required=False, # Mude para True se for um campo obrigatório
-        input_formats=['%Y-%m-%d', '%d/%m/%Y'], # Aceita o formato HTML5 (AAAA-MM-DD) e o padrão BR (DD/MM/AAAA)
+        required=False,
+        input_formats=['%Y-%m-%d', '%d/%m/%Y'],
         widget=forms.DateInput(
             format='%Y-%m-%d',
             attrs={
-                'type': 'date', # Garante que o input no navegador seja o seletor de data
-                'class': 'form-control', # Mantenha a classe CSS que você usa (ex: Bootstrap)
+                'type': 'date',
+                'class': 'form-control',
             }
         )
     )
 
     class Meta:
+        model = Cliente
+        fields = "__all__"  # Inclui todos os campos do modelo de cliente
 
-        model=Cliente
-
-        fields="__all__"
-
-        exclude = [
-                        "sessoes_realizadas",
-                    ]
-
-        widgets={
-
-            "nascimento":forms.DateInput(
-
-                attrs={"type":"date"}
-
-            ),
-
-            "observacoes":forms.Textarea(
-
-                attrs={"rows":4}
-
-            ),
-
-
+        widgets = {
+            "observacoes": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Injeta automaticamente as classes do Bootstrap e placeholders
+        for name, field in self.fields.items():
+            if isinstance(field.widget, forms.widgets.Select):
+                field.widget.attrs['class'] = 'form-select'
+            else:
+                field.widget.attrs['class'] = 'form-control'
+
+        # Customizações pontuais de placeholder (opcional)
+        if 'dia_vencimento' in self.fields:
+            self.fields['dia_vencimento'].widget.attrs['placeholder'] = 'Ex: 5, 10, 15'
+        elif 'dias_vencimento' in self.fields:
+            self.fields['dias_vencimento'].widget.attrs['placeholder'] = 'Ex: 5, 10, 15'

@@ -88,13 +88,19 @@ class Cliente(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="clientes"
+        verbose_name="Suelen Garcia de Almeida",
     )
 
+    
     valor_sessao = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0
+    )
+
+    dias_vencimento = models.PositiveIntegerField(
+        default=5, 
+        help_text="Quantidade de dias após o agendamento para o vencimento da fatura"
     )
 
     total_sessoes = models.PositiveIntegerField(

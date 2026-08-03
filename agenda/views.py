@@ -87,27 +87,39 @@ def novo(request):
 
     return render(request, "agenda/form.html", {"form": form})
 
-        
-
-
 @login_required
 def editar(request, pk):
+    agendamento = get_object_or_404(Agendamento, pk=pk)
 
-    agendamento = get_object_or_404(
-        Agendamento,
-        pk=pk,
-    )
+    if request.method == 'POST':
+        form = AgendamentoForm(request.POST, instance=agendamento)
+        
+        datas = request.POST.getlist('datas[]')
+        horas_inicio = request.POST.getlist('horas_inicio[]')
+        horas_fim = request.POST.getlist('horas_fim[]')
+        duracao_minutos = request.POST.get('duracao_minutos')
 
-    form = AgendamentoForm(
-        request.POST or None,
-        instance=agendamento,
-    )
+        if form.is_valid():
+            obj = form.save(commit=False)
 
-    if form.is_valid():
+            # Preenche a data e horários
+            if datas and datas[0]:
+                obj.data = datas[0]
+            if horas_inicio and horas_inicio[0]:
+                obj.hora_inicio = horas_inicio[0]
+            if horas_fim and horas_fim[0] and hasattr(obj, 'hora_fim'):
+                obj.hora_fim = horas_fim[0]
+            if duracao_minutos and hasattr(obj, 'duracao_minutos'):
+                obj.duracao_minutos = int(duracao_minutos)
 
-        form.save()
+            # Se o valor não foi informado na tela, busca do cadastro do cliente
+            if not obj.valor and obj.cliente:
+                obj.valor = obj.cliente.valor_sessao
 
-        return redirect("agenda")
+            obj.save()
+            return redirect("agenda")
+    else:
+        form = AgendamentoForm(instance=agendamento)
 
     return render(
         request,
@@ -128,5 +140,104 @@ def excluir(request, pk):
     )
 
     agendamento.delete()
+
+    return redirect("agenda")
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from clientes.models import Cliente
+
+@login_required
+def obter_valor_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, pk=cliente_id)
+    return JsonResponse({
+        'sucesso': True, 
+        'valor': float(cliente.valor_sessao)
+    })
+
+from financeiro.models import Lancamento  # Importa o model do financeiro
+
+@login_required
+def criar_ou_editar_agendamento(request, pk=None):
+    if pk:
+        agendamento = get_object_or_404(Agendamento, pk=pk)
+    else:
+        agendamento = Agendamento()
+
+    if request.method == 'POST':
+        form = AgendamentoForm(request.POST, instance=agendamento)
+        
+        datas = request.POST.getlist('datas[]')
+        horas_inicio = request.POST.getlist('horas_inicio[]')
+        horas_fim = request.POST.getlist('horas_fim[]')
+        duracao_minutos = request.POST.get('duracao_minutos')
+
+        if form.is_valid():
+            # Salva o agendamento individual ou primeiro da lista
+            obj = form.save(commit=False)
+
+            if datas and datas[0]:
+                obj.data = datas[0]
+            if horas_inicio and horas_inicio[0]:
+                obj.hora_inicio = horas_inicio[0]
+            if horas_fim and horas_fim[0] and hasattr(obj, 'hora_fim'):
+                obj.hora_fim = horas_fim[0]
+            if duracao_minutos and hasattr(obj, 'duracao_minutos'):
+                obj.duracao_minutos = int(duracao_minutos)
+
+            # Define o valor puxando do cliente se estiver zerado
+            if not obj.valor and obj.cliente:
+                obj.valor = obj.cliente.valor_sessao
+
+            obj.save()
+
+            # --- GERADOR DE CONTAS A RECEBER (LANÇAMENTO) ---
+            if obj.cliente and obj.valor > 0:
+                # Calcula a data de vencimento com base no cadastro do cliente
+                dias = getattr(obj.cliente, 'dias_vencimento', 5)
+                
+                if isinstance(obj.data, str):
+                    data_agendamento = datetime.strptime(obj.data, '%Y-%m-%d').date()
+                else:
+                    data_agendamento = obj.data
+
+                data_vencimento = data_agendamento + timedelta(days=dias)
+
+                # Cria ou atualiza o lançamento vinculado a este agendamento
+                Lancamento.objects.update_or_create(
+                    agendamento=obj,
+                    defaults={
+                        'cliente': obj.cliente,
+                        'descricao': f"Sessão de Consulta - {obj.cliente.nome} ({data_agendamento.strftime('%d/%m/%Y')})",
+                        'valor': obj.valor,
+                        'data': data_agendamento,
+                        'data_vencimento': data_vencimento,
+                        'status': 'PENDENTE',
+                        'tipo': 'RECEITA'
+                    }
+                )
+
+            return redirect("agenda")
+    else:
+        form = AgendamentoForm(instance=agendamento)
+
+    return render(request, "agenda/form.html", {"form": form, "agendamento": agendamento})
+
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from .models import Agendamento
+
+@require_POST
+def excluir_massa(request):
+    # Pega todos os IDs marcados nos checkboxes (lista de strings)
+    ids = request.POST.getlist("ids")
+    
+    if ids:
+        # Deleta todos os agendamentos cujos IDs estão na lista
+        qtd_deletados, _ = Agendamento.objects.filter(id__in=ids).delete()
+        messages.success(request, f"{qtd_deletados} agendamento(s) excluído(s) com sucesso!")
+    else:
+        messages.warning(request, "Nenhum agendamento foi selecionado para exclusão.")
 
     return redirect("agenda")
